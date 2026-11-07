@@ -23,6 +23,33 @@ Run it from Terminal instead with `.venv/bin/python explorer.py [FOLDER]`. Probl
 `~/Library/Logs/DXF Explorer.log`. If you move this project folder, rebuild the app with
 `.venv/bin/python make_app.py`.
 
+## Building the shareable version
+
+```sh
+.venv/bin/python build_dist.py        # -> dist/DXF Explorer.app and dist/DXF-Explorer-<version>.dmg
+```
+
+The DMG is what you hand out. It holds the standalone app (Python, Qt and ezdxf are inside it, so
+it needs nothing else installed), an Applications shortcut, `Read Me First.txt` and `LICENSE.txt`.
+It takes about a minute to build.
+
+- **Version, copyright, donate link:** `VERSION`, `COPYRIGHT` and `DONATE_URL` at the top of
+  `explorer.py`. When `DONATE_URL` is set, the About box links to it and a **Help ▸ Support DXF
+  Explorer…** item appears.
+- **Licence:** freeware (`LICENSE`). The app ships Qt/PySide6 under the LGPLv3, so it keeps them as
+  separate libraries and includes their notices: `THIRD_PARTY_LICENSES.txt`, generated at build time
+  and shown under Help ▸ Licenses. The GPL, LGPL and Python licence texts are in `licenses/`.
+- **Signing:** the app is ad-hoc signed and not notarized, so macOS blocks the first open. Users
+  allow it once (steps are in `Read Me First.txt`). With an Apple Developer ID, run
+  `build_dist.py --sign "Developer ID Application: …"`, then notarize and staple the DMG with
+  `xcrun notarytool submit dist/*.dmg --keychain-profile … --wait` and `xcrun stapler staple dist/*.dmg`.
+- **CPU:** the build matches this Mac (Apple silicon/arm64). An Intel or universal build needs a
+  universal2 Python.
+- **DWG:** the shipped app opens DXF. DWG works only if CADCraft's CLI is installed; otherwise the
+  app asks the user to save the drawing as DXF.
+- **Smoke test:** `DXF_EXPLORER_SELFTEST=/tmp/shot.png "dist/DXF Explorer.app/Contents/MacOS/DXF Explorer" FOLDER`
+  opens the folder, saves a picture of the window once the first drawing has loaded, and quits.
+
 ## The web gallery (batch)
 
 ```sh

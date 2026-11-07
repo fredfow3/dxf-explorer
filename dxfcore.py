@@ -68,7 +68,8 @@ def to_dxf(src: Path, cache: Path) -> tuple[Path, str | None]:
     if src.suffix.lower() != ".dwg":
         return src, None
     if not CADCRAFT.exists():
-        raise RuntimeError(f"DWG needs CADCraft's CLI at {CADCRAFT}")
+        raise RuntimeError("DWG files can't be opened directly. Save this drawing as DXF from your CAD "
+                           "program, or install CADCraft (its command-line tool is used to convert DWG).")
     cache.mkdir(parents=True, exist_ok=True)
     st = src.stat()
     dst = cache / (file_id(f"{src}|{st.st_size}|{st.st_mtime_ns}") + ".dxf")

@@ -20,6 +20,12 @@ import traceback
 from collections import OrderedDict, defaultdict
 from pathlib import Path
 
+FROZEN = getattr(sys, "frozen", False)            # True inside the standalone .app built by build_dist.py
+if FROZEN:   # no Terminal there: send output (including import errors below) to the dev launcher's log
+    _log = Path.home() / "Library/Logs/DXF Explorer.log"
+    _log.parent.mkdir(parents=True, exist_ok=True)
+    sys.stdout = sys.stderr = open(_log, "a", buffering=1, encoding="utf-8")
+
 from PySide6 import QtCore as qc, QtGui as qg, QtWidgets as qw
 
 from ezdxf.addons.drawing import Frontend, RenderContext
@@ -30,6 +36,10 @@ from ezdxf.addons.drawing.pyqt import PyQtBackend, _get_x_scale
 import dxfcore
 
 APP = "DXF Explorer"
+VERSION = "1.0.0"
+COPYRIGHT = "© 2026 Fred Fowler"
+DONATE_URL = ""      # e.g. a PayPal.me / Ko-fi / Buy Me a Coffee link; the Support menu item hides while empty
+RES =Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))   # bundled resources (icon, licences)
 CACHE = Path.home() / "Library/Caches/DXF Explorer"
 BG = {False: "#ffffff", True: "#20262e"}          # light / dark drawing background
 
@@ -307,10 +317,31 @@ class Explorer(qw.QMainWindow):
         m = self.menuBar().addMenu("&View")
         for a in (self.a_dark, None, self.a_fit, self.a_in, self.a_out, None, self.a_panel, None, self.a_next, self.a_prev):
             m.addSeparator() if a is None else m.addAction(a)
+        m = self.menuBar().addMenu("&Help")
+        a = m.addAction(f"About {APP}", self.about); a.setMenuRole(qg.QAction.AboutRole)   # goes to the app menu on macOS
+        if DONATE_URL:
+            a = m.addAction(f"Support {APP}…", lambda: qg.QDesktopServices.openUrl(qc.QUrl(DONATE_URL)))
+            a.setMenuRole(qg.QAction.ApplicationSpecificRole)
+        m.addAction("Licenses…", lambda: qg.QDesktopServices.openUrl(qc.QUrl.fromLocalFile(str(RES / "THIRD_PARTY_LICENSES.txt"))))
 
         tb = self.addToolBar("Main"); tb.setMovable(False); tb.setToolButtonStyle(qc.Qt.ToolButtonTextOnly)
         for a in (self.a_open, None, self.a_fit, self.a_in, self.a_out, None, self.a_dark, None, self.a_reveal):
             tb.addSeparator() if a is None else tb.addAction(a)
+
+    def about(self):
+        import ezdxf, PySide6
+        support = (f'<p>DXF Explorer is free. If it\'s useful to you, you can '
+                   f'<a href="{DONATE_URL}">support its development</a>.</p>') if DONATE_URL else \
+                  "<p>DXF Explorer is free to use and share.</p>"
+        box = qw.QMessageBox(self)
+        box.setWindowTitle(f"About {APP}")
+        box.setIconPixmap(qw.QApplication.windowIcon().pixmap(96, 96))
+        box.setTextFormat(qc.Qt.RichText)
+        box.setText(f"<h3>{APP} {VERSION}</h3><p>{COPYRIGHT}</p>{support}"
+                    f"<p style='color:gray;font-size:small'>Built with ezdxf {ezdxf.__version__} and "
+                    f"Qt for Python (PySide6) {PySide6.__version__}, used under their licences "
+                    f"(MIT and LGPLv3). See Help ▸ Licenses.</p>")
+        box.exec()
 
     # -- folder & list
     def choose_folder(self):
@@ -682,7 +713,7 @@ def main():
         pass
     app = App(sys.argv)
     app.setApplicationName(APP); app.setApplicationDisplayName(APP)
-    icon = Path(__file__).with_name("icon.png")
+    icon = RES / "icon.png"
     if icon.exists():
         app.setWindowIcon(qg.QIcon(str(icon)))
     args = [a for a in sys.argv[1:] if not a.startswith("-psn")]
@@ -692,6 +723,13 @@ def main():
     w = Explorer(folder)
     app.folder_opened.connect(lambda f: w.open_folder(Path(f) if Path(f).is_dir() else Path(f).parent))
     w.show()
+    if shot := os.environ.get("DXF_EXPLORER_SELFTEST"):   # build check: save a window grab once loaded, then quit
+        def check(tries=[0]):
+            tries[0] += 1
+            if w.status_label.text().startswith("Loading") and tries[0] < 120:
+                return qc.QTimer.singleShot(500, check)
+            w.grab().save(shot); print("selftest:", w.status_label.text(), flush=True); app.quit()
+        qc.QTimer.singleShot(1500, check)
     sys.exit(app.exec())
 
 

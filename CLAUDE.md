@@ -12,6 +12,11 @@ User-facing docs are in `README.md`. Source files are only ever read, never writ
 - `make_app.py` — builds `~/Applications/DXF Explorer.app` (bash launcher + icon). Rebuild if the
   project folder moves. App log: `~/Library/Logs/DXF Explorer.log`. Settings: QSettings
   `com.dxf-explorer.DXF Explorer` (folder, file, dark, geometry).
+- `build_dist.py` — the distributable version: a standalone PyInstaller app plus a DMG in `dist/`
+  (freeware, ad-hoc signed, arm64). `VERSION`/`COPYRIGHT`/`DONATE_URL` live in `explorer.py`; `RES`
+  is where bundled resources are found (`sys._MEIPASS` when `FROZEN`). Licence texts: `LICENSE`, `licenses/`.
+  Smoke-test the build with `DXF_EXPLORER_SELFTEST=out.png <app>/Contents/MacOS/DXF\ Explorer FOLDER`.
+- Git repo on `main`; `.venv/`, `out/`, `build/`, `dist/` are ignored.
 
 ## Run / test
 - Python env: `.venv/bin/python` (3.12; ezdxf 1.4.5, PySide6, matplotlib, pyobjc-framework-Cocoa).
@@ -30,5 +35,7 @@ User-facing docs are in `README.md`. Source files are only ever read, never writ
 - ezdxf's Qt backend ignores `Configuration.min_lineweight`; minimum line width is enforced in
   `SolidLineBackend._get_pen` (cosmetic pens, screen points).
 - ezdxf won't draw entities on layers missing from the layer table — `describe()` adds them.
+- ezdxf's drawing add-on imports Pillow, so never add `PIL` to `EXCLUDES` in `build_dist.py`;
+  without it the frozen app dies at launch.
 - The process runs as `org.python.python` (Homebrew framework Python); the menu-bar name is patched
   to "DXF Explorer" via pyobjc in `main()`.

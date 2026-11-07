@@ -1,0 +1,20 @@
+DXF Explorer
+Copyright © 2026 Fred Fowler. All rights reserved.
+
+DXF Explorer is freeware. You may use it at no cost, for any purpose, on as many computers as
+you like. You may give away unmodified copies of the distributed disk image (.dmg) or app, as
+long as you charge nothing for it and keep this licence and the third-party notices with it.
+
+You may not sell DXF Explorer, bundle it with a product you sell, or pass off a modified copy
+as the original.
+
+DXF Explorer only reads your drawings; it never changes them. Even so, it is provided "AS IS",
+WITHOUT WARRANTY OF ANY KIND, express or implied, including but not limited to the warranties
+of merchantability, fitness for a particular purpose and non-infringement. In no event shall
+the author be liable for any claim, damages or other liability arising from the use of, or
+inability to use, this software.
+
+DXF Explorer contains open-source components, each under its own licence, including Qt and
+Qt for Python (PySide6) under the GNU Lesser General Public License v3 and ezdxf under the MIT
+License. Those licences, not this one, govern those components. Their full texts are in
+THIRD_PARTY_LICENSES.txt (inside the app: Help ▸ Licenses).

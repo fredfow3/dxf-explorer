@@ -12,3 +12,4 @@ run.log
 
 # macOS
 .DS_Store
+build.log

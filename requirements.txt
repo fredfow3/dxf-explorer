@@ -1,0 +1,6 @@
+# Recreate the dev environment:  python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
+ezdxf==1.4.5
+PySide6_Essentials==6.12.0     # only the core Qt modules the app uses (not the 1.2 GB full PySide6)
+matplotlib==3.11.2             # inventory.py / gallery renders
+pyobjc-framework-Cocoa==13.0   # menu-bar name when run from source
+pyinstaller==6.22.3            # build_dist.py
